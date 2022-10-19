@@ -18,7 +18,7 @@ lint: ## Run linters
 	@./venv/bin/pre-pre_commit run -a
 
 test: lint ## Run tests
-	@./venv/bin/pytest -vv --durations=10 --cov-fail-under=1 --cov=jhu_nlp --cov-report html tests/
+	@./venv/bin/pytest -vv --durations=10 --cov-fail-under=1 --cov=rlner --cov-report html tests/
 
 docs: init ##
 	@rm -rf docs.log build/html/
