@@ -1,0 +1,56 @@
+[tool.black]
+line-length = 120
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | \_build
+    | buck-out
+    | build
+    | dist
+    | src
+    | venv
+    | env
+    | docs
+)/
+'''
+
+[tool.isort]
+profile = "black"
+sections = ["FUTURE" ,"STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+import_heading_stdlib = "standard libaries"
+import_heading_thirdparty = "third party libraries"
+import heading_firstparty = "custom libraries"
+dedup_headings = true
+line_length = 120
+
+[tool.mypy]
+python_version = "3.10"
+disallow_untyped_defs = true
+ignore_missing_imports = true
+strict_optional = false
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = ['**/__init__.py']
+
+[tool.coverage.report]
+ignore_errors = false
+show_missing = true
+exclude_lines = [
+    '@abstractmethod',
+    '@abc.abstractmethod',
+    'Protocol'
+]
+
+[build-system]
+requires=["setuptools==65.5.0", "wheel==0.37.1"]
