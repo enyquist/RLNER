@@ -1,24 +1,29 @@
-# # standard libaries
-# from ast import literal_eval
-# from dataclasses import dataclass, field
-# from pathlib import Path
-# from typing import Dict, List, Union
-
-# Document = Dict[str, Union[str, int]]
+# standard libaries
+import logging
+from dataclasses import dataclass, field
+from typing import List
 
 
-# def read_json(path: Path) -> List[Document]:
-#     with open(path, "r") as fp:
-#         out = [literal_eval(line) for line in fp]
-#     return out
+@dataclass
+class Word:
+    """Class for a word and tags"""
+
+    sentence_num: int
+    word: str
+    start_idx: int
+    end_idx: int
+    tags: List[str] = field(default_factory=list)
+
+    def __post_init__(self):
+        self.tags.append("O")
 
 
-# @dataclass
-# class Word:
-#     text: str
-#     start_idx: int
-#     end_idx: int
-#     labels: List[str] = field(default_factory=list)
-
-#     def __post_init__(self):
-#         self.labels.append("O")
+def configure_logging() -> logging.Logger:
+    """Make logger"""
+    logger = logging.getLogger()
+    c_handler = logging.StreamHandler()
+    c_handler.setLevel(logging.INFO)
+    c_format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    c_handler.setFormatter(c_format)
+    logger.addHandler(c_handler)
+    return logger
