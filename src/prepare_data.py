@@ -226,6 +226,9 @@ def main() -> None:
     master_df = merge_dfs(dfs)
     master_df.reset_index(drop=True, inplace=True)
 
+    # Split single labels out instead of multi-label
+    master_df["single_tag"] = master_df["tags"].apply(lambda x: x[0])
+
     # Save master df
     master_df.to_csv(PREPARED_DIR / "master.csv", index=False)
 
