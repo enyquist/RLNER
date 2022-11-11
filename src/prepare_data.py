@@ -214,6 +214,19 @@ def preprocess_docs(doc_path: Path) -> List[pd.DataFrame]:
     return output
 
 
+def get_pos_tag(text: str) -> str:
+    """Get POS tag for token
+
+    Args:
+        text (str): text
+
+    Returns:
+        str: POS tag
+    """
+    doc = nlp(text)
+    return [tok.pos_ for tok in doc][0]
+
+
 def main() -> None:
     """Transform raw Re3d Data into a master csv"""
 
@@ -228,6 +241,7 @@ def main() -> None:
 
     # Split single labels out instead of multi-label
     master_df["single_tag"] = master_df["tags"].apply(lambda x: x[0])
+    master_df["POS"] = master_df["word"].apply(get_pos_tag)
 
     # Save master df
     master_df.to_csv(PREPARED_DIR / "master.csv", index=False)
