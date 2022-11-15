@@ -24,4 +24,3 @@ test: lint ## Run tests
 docs: init ##
 	@rm -rf docs.log build/html/
 	@./venv/bin/sphinx-build -c docs.log docs build/html/
-
