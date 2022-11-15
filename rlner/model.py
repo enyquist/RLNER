@@ -7,7 +7,9 @@ from typing import Dict, Tuple
 import numpy as np
 import tensorflow.keras.layers as layers
 import tensorflow.keras.models as models
-from crf import CRF
+
+# rlner libraries
+from rlner.crf import CRF
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
