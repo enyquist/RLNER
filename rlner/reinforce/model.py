@@ -9,8 +9,8 @@ class PolicyNet(keras.Model):
     def __init__(self, action_dim: int = 1):
         """Initialize Network"""
         super().__init__()
-        self.fc1 = layers.Dense(24, activation="relu")
-        self.fc2 = layers.Dense(36, activation="relu")
+        self.fc1 = layers.Dense(100, activation="relu")
+        self.fc2 = layers.Dense(100, activation="relu")
         self.fc3 = layers.Dense(action_dim, activation="softmax")
 
     def call(self, x):

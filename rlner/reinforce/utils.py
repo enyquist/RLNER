@@ -1,5 +1,6 @@
 # third party libraries
 import gym
+from tqdm import tqdm
 
 # rlner libraries
 from rlner.reinforce.agent import Agent
@@ -7,7 +8,7 @@ from rlner.reinforce.agent import Agent
 
 def train(agent: Agent, env: gym.Env, episodes: int, render=True):
     """Train an agent"""
-    for episode in range(episodes):
+    for episode in tqdm(range(episodes), desc="Episode"):
         done = False
         state = env.reset()
         total_reward = 0

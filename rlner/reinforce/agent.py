@@ -13,7 +13,7 @@ class Agent:
     def __init__(self, action_dim: int = 1):
         """Intialize Agent"""
         self.policy_net = PolicyNet(action_dim=action_dim)
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-7)
         self.gamma = 0.99
 
     def policy(self, observation):
@@ -27,7 +27,7 @@ class Agent:
     def get_action(self, observation):
         """Get action from policy"""
         action = self.policy(observation).numpy()
-        return action.squeeze()
+        return int(action.squeeze())
 
     def learn(self, states, rewards, actions):
         """Training Loop"""
