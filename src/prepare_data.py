@@ -2,6 +2,7 @@
 import logging
 from ast import literal_eval
 from copy import deepcopy
+from dataclasses import asdict
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
@@ -10,6 +11,7 @@ import pandas as pd
 import spacy
 from tqdm import tqdm
 
+# rlner libraries
 # custom libraries
 from utils import Word
 
@@ -171,6 +173,15 @@ def get_token_spans(text: str) -> TokenSpan:
             token_span = doc[token.i : token.i + 1]
             token_spans.append((sentence_idx, token.text, token_span.start_char, token_span.end_char))
 
+    # Remove problematic tokens
+    blank_tokens = []
+    for idx, span in enumerate(token_spans):
+        if any(ext in span[1] for ext in ["\n", " ", "\xa0"]):
+            blank_tokens.append(idx)
+
+    for idx in reversed(blank_tokens):
+        token_spans.pop(idx)
+
     return token_spans
 
 
@@ -207,7 +218,7 @@ def preprocess_docs(doc_path: Path) -> List[pd.DataFrame]:
         tagged_words = bio_tagger(labeled_words)
 
         # Create dataframe
-        doc_df = pd.DataFrame(tagged_words)
+        doc_df = pd.DataFrame([asdict(word) for word in tagged_words])
 
         output.append(doc_df)
 
@@ -239,7 +250,7 @@ def main() -> None:
     master_df = merge_dfs(dfs)
     master_df.reset_index(drop=True, inplace=True)
 
-    # Split single labels out instead of multi-label
+    # Split single labels out instead of multi-label and get POS
     master_df["single_tag"] = master_df["tags"].apply(lambda x: x[0])
     master_df["POS"] = master_df["word"].apply(get_pos_tag)
 
