@@ -12,7 +12,7 @@ from tqdm import tqdm
 from rlner.nlp_gym.data_pools.base import Sample
 from rlner.nlp_gym.data_pools.multi_label_pool import MultiLabelPool
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = Path(__file__).resolve().parents[3]
 DATA_DIR = ROOT_DIR / "data"
 PREPARED_DIR = DATA_DIR / "prepared"
 NOISE_DIR = PREPARED_DIR / "noise"
