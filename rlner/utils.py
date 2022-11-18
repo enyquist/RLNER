@@ -95,6 +95,7 @@ class SentenceGetter:
         self.grouped = self.data.groupby("sentence_num").apply(self._agg_func)
         self.sentences = [s for s in self.grouped]
 
+    @staticmethod
     def _agg_func(s):
         """Aggregate word, pos, tag from grouped sentence"""
         return [
