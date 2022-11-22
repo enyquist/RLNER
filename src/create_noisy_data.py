@@ -10,7 +10,6 @@ import pandas as pd
 from tqdm import tqdm
 
 # rlner libraries
-import rlner.noise as noise
 from rlner.utils import SentenceGetter
 
 logger = logging.getLogger()
@@ -51,10 +50,11 @@ def main() -> None:
         joblib.dump(test_sentences, fp, compress=3)
 
     # Apply noise and save
-    noisy_percentages = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    noisy_percentages = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
     for percentage in tqdm(noisy_percentages, desc="Noise Percentages"):
-        noisy_sentences = noise.add_noise(train_sentences, percentage)
+        num_samples = int(len(train_sentences) * percentage)
+        noisy_sentences = random.Random(42).sample(train_sentences, num_samples)
 
         with open(NOISE_DIR / f"noise_{percentage}.joblib", "wb") as fp:
             joblib.dump(noisy_sentences, fp, compress=3)
