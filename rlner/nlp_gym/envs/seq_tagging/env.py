@@ -84,7 +84,9 @@ class SeqTagEnv(BaseEnv):
         target_labels = copy.deepcopy(self.current_sample.label)
 
         # compute reward function
-        step_reward = self.reward_function(self.current_sample.observation, action_str, target_labels)
+        step_reward = self.reward_function(
+            self.current_sample.observation, action_str, target_labels, self.current_sample.text
+        )
 
         # increment the time step
         self.time_step += 1
