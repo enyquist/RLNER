@@ -76,7 +76,7 @@ def create_model(
     pred = crf(time_dist)
 
     model1 = models.Model(inputs=[inputs], outputs=[pred])
-    model2 = models.Model(inputs=[inputs], outputs=[pred, sh_fw, sc_fw, sh_bw, sc_bw, embeddings])
+    model2 = models.Model(inputs=[inputs], outputs=[pred, lstm_out, sh_fw, sc_fw, sh_bw, sc_bw, embeddings])
 
     model1.compile(optimizer="adam", loss=crf.loss, metrics=[crf.accuracy])
     model1.summary()
