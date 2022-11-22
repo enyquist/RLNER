@@ -9,20 +9,11 @@ Sentences = List[Sentence]
 
 
 LABELS = {
-    "CommsIdentifier",
-    "Coordinate",
-    "DocumentReference",
-    "Frequency",
     "Location",
-    "MilitaryPlatform",
-    "Money",
-    "Nationality",
     "Organisation",
     "Person",
     "Quantity",
     "Temporal",
-    "Vehicle",
-    "Weapon",
 }
 
 
