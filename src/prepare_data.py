@@ -238,6 +238,20 @@ def get_pos_tag(text: str) -> str:
     return [tok.pos_ for tok in doc][0]
 
 
+def clean_tags(x: str) -> str:
+    """If tags don't comprise at least 5% of the dataset, remove them as targets
+
+    Args:
+        x (str): word BIO tag
+
+    Returns:
+        str: Cleaned tag
+    """
+    if x.split("-")[-1] not in ["Organisation", "Location", "Person", "Temporal", "Quantity"]:
+        return "O"
+    return x
+
+
 def main() -> None:
     """Transform raw Re3d Data into a master csv"""
 
@@ -252,6 +266,7 @@ def main() -> None:
 
     # Split single labels out instead of multi-label and get POS
     master_df["single_tag"] = master_df["tags"].apply(lambda x: x[0])
+    master_df["single_tag"] = master_df["single_tag"].apply(clean_tags)
     master_df["POS"] = master_df["word"].apply(get_pos_tag)
 
     # Save master df
