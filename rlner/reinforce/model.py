@@ -1,4 +1,5 @@
 # third party libraries
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
@@ -13,7 +14,7 @@ class PolicyNet(keras.Model):
         self.fc2 = layers.Dense(100, activation="relu")
         self.fc3 = layers.Dense(action_dim, activation="softmax")
 
-    def call(self, x):
+    def call(self, x: tf.Tensor) -> tf.Tensor:
         """Forward Pass"""
         x = self.fc1(x)
         x = self.fc2(x)
