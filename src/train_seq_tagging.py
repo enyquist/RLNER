@@ -143,6 +143,8 @@ def main(split: str) -> None:
 
     # Save final agent
     agent.dump(MODEL_DIR / f"agents/agent_{split}")
+    model1.save(MODEL_DIR / f"agents/agent_{split}/model1")
+    model2.save(MODEL_DIR / f"agents/agent_{split}/model2")
 
 
 if __name__ == "__main__":
