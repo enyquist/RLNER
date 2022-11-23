@@ -28,25 +28,6 @@ LOG_DIR = MODEL_DIR / "logs/"
 CHECKPOINT_DIR = MODEL_DIR / "checkpoints"
 
 
-def eval_agent(agent: Agent, env: SeqTagEnv):
-    """Eval an agent"""
-    done = False
-    obs = env.reset()
-    total_reward = 0.0
-    actions = []
-    while not done:
-        action = agent.get_action(obs)
-        obs, rewards, done, info = env.step(action)
-        actions.append(env.action_space.ix_to_action(action))
-        total_reward += rewards
-    print("---------------------------------------------")
-    print(f"Text: {env.current_sample.text}")
-    print(f"Predicted Label {actions}")
-    print(f"Oracle Label: {env.current_sample.label}")
-    print(f"Total Reward: {total_reward}")
-    print("---------------------------------------------")
-
-
 def _get_data(target: str):
     if target in ["validation", "test"]:
         with open(PREPARED_DIR / f"{target}.joblib", "rb") as fp:
@@ -121,7 +102,7 @@ def main(split: str) -> None:
         vocab_size=len(words2index), max_length=max_len, embedding_dim=100, word_index=words2index, tag_index=tags2index
     )
 
-    callback = tf.keras.callbacks.EarlyStopping(monitor="loss", patience=3)
+    callback = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3)
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
         log_dir=log_dir,
         histogram_freq=1,
@@ -161,8 +142,7 @@ def main(split: str) -> None:
     train(agent, env, episodes, render=False)
 
     # Save final agent
-    with open(MODEL_DIR / f"agents/agent_{split}.joblib", "wb") as fp:
-        joblib.dump(agent, fp, compress=3)
+    agent.dump(MODEL_DIR / f"agents/agent_{split}")
 
 
 if __name__ == "__main__":
