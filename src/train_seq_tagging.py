@@ -4,19 +4,17 @@ import shutil
 from pathlib import Path
 
 # third party libraries
-import joblib
 import tensorflow as tf
-from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # rlner libraries
+import rlner.utils as utils
 from rlner.nlp_gym.data_pools.custom_seq_tagging_pools import Re3dTaggingPool
 from rlner.nlp_gym.envs.common.action_space import ActionSpace
 from rlner.nlp_gym.envs.seq_tagging.env import SeqTagEnv
 from rlner.nlp_gym.envs.seq_tagging.featurizer import BiLSTMFeaturizerForSeqTagging
 from rlner.nlp_gym.envs.seq_tagging.reward import EntityF1Score
 from rlner.reinforce.agent import Agent
-from rlner.reinforce.utils import train
-from rlner.utils import create_model
+from rlner.reinforce.utils import predict, train
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
@@ -28,45 +26,6 @@ LOG_DIR = MODEL_DIR / "logs/"
 CHECKPOINT_DIR = MODEL_DIR / "checkpoints"
 
 
-def _get_data(target: str):
-    if target in ["validation", "test"]:
-        with open(PREPARED_DIR / f"{target}.joblib", "rb") as fp:
-            sentences = joblib.load(fp)
-        return sentences
-
-    with open(NOISE_DIR / f"noise_{target}.joblib", "rb") as fp:
-        sentences = joblib.load(fp)
-    return sentences
-
-
-def _get_words(sentences):
-    words = set([item[0] for sublist in sentences for item in sublist])
-    words.add("PADword")
-    return words
-
-
-def _get_tags(sentences):
-    tags = set([item[-1] for sublist in sentences for item in sublist])
-    return tags
-
-
-def _to_idx(vals):
-    return {val: idx for idx, val in enumerate(vals)}
-
-
-def _make_dataset(sentences, max_len, words2index, tags2index):
-    y = [[tags2index.get(w[-1], tags2index.get("O")) for w in s] for s in sentences]
-    y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=tags2index["O"])
-    X = [[words2index.get(w[0], words2index.get("PADword")) for w in s] for s in sentences]
-    X = pad_sequences(maxlen=max_len, sequences=X, padding="post", value=words2index["PADword"])
-
-    x_tensor = tf.convert_to_tensor(X)
-    y_tensor = tf.convert_to_tensor(y)
-
-    ds = tf.data.Dataset.from_tensor_slices((x_tensor, y_tensor))
-    return ds.batch(32)
-
-
 def main(split: str) -> None:
     """Main Function"""
     # Training variables
@@ -76,15 +35,16 @@ def main(split: str) -> None:
 
     # Setup for RLNER
     log_dir = LOG_DIR / f"{split}"
-    train_sentences = _get_data(split)
-    val_sentences = _get_data("validation")
-    words = _get_words(train_sentences)
-    tags = _get_tags(train_sentences)
-    words2index = _to_idx(words)
-    tags2index = _to_idx(tags)
+    train_sentences = utils._get_data(split)
+    val_sentences = utils._get_data("validation")
+    test_sentences = utils._get_data("test")
+    words = utils._get_words(train_sentences)
+    tags = utils._get_tags(train_sentences)
+    words2index = utils._to_idx(words)
+    tags2index = utils._to_idx(tags)
 
-    train_ds = _make_dataset(train_sentences, max_len, words2index, tags2index)
-    val_ds = _make_dataset(val_sentences, max_len, words2index, tags2index)
+    train_ds = utils._make_dataset(train_sentences, max_len, words2index, tags2index)
+    val_ds = utils._make_dataset(val_sentences, max_len, words2index, tags2index)
 
     # Prepare Logs
     if not log_dir.exists():
@@ -98,7 +58,7 @@ def main(split: str) -> None:
                 i.unlink()
 
     # Instansiate Model
-    model1, model2 = create_model(
+    model1, model2 = utils.create_model(
         vocab_size=len(words2index), max_length=max_len, embedding_dim=100, word_index=words2index, tag_index=tags2index
     )
 
@@ -118,6 +78,7 @@ def main(split: str) -> None:
 
     # data pool
     data_pool = Re3dTaggingPool.prepare(split=str(split))
+    test_data_pool = Re3dTaggingPool.prepare(split="test")
 
     # reward function
     reward_fn = EntityF1Score(dense=True, average="micro")
@@ -145,6 +106,25 @@ def main(split: str) -> None:
     agent.dump(MODEL_DIR / f"agents/agent_{split}")
     model1.save(MODEL_DIR / f"agents/agent_{split}/model1")
     model2.save(MODEL_DIR / f"agents/agent_{split}/model2")
+
+    # seq tag env
+    test_env = SeqTagEnv(data_pool.labels(), reward_function=reward_fn, observation_featurizer=observation_featurizer)
+    for sample, weight in test_data_pool:
+        test_env.add_sample(sample, weight)
+
+    # Eval Agent
+    preds = predict(agent, test_env, render=False)
+
+    for pred, sentence in zip(preds, test_sentences):
+        assert len(pred) == len(sentence)
+        for idx, p in enumerate(pred):
+            sentence[idx] = sentence[idx] + (p,)
+
+    with open(MODEL_DIR / f"agents/agent_{split}/preds.txt", "w") as fp:
+        for sentence in test_sentences:
+            for token, pos, truth, pred in sentence:
+                fp.write(f"{token} {pos} {truth} {pred}\n")
+            fp.write("\n")
 
 
 if __name__ == "__main__":
