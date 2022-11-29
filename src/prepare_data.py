@@ -12,7 +12,6 @@ import spacy
 from tqdm import tqdm
 
 # rlner libraries
-# custom libraries
 from utils import Word
 
 logger = logging.getLogger()
