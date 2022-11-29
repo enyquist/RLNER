@@ -45,6 +45,10 @@ class Re3dTaggingPool(MultiLabelPool):
 
     @staticmethod
     def _get_dataset_from_path(split: str):
+        if split in ["validation", "test"]:
+            with open(PREPARED_DIR / f"{split}.joblib", "rb") as fp:
+                sentences = joblib.load(fp)
+            return sentences
         with open(NOISE_DIR / f"noise_{split}.joblib", "rb") as fp:
             sentences = joblib.load(fp)
         return sentences
