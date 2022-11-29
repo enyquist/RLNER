@@ -4,9 +4,12 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 # third party libraries
+import joblib
 import numpy as np
+import tensorflow as tf
 import tensorflow.keras.layers as layers
 import tensorflow.keras.models as models
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # rlner libraries
 from rlner.crf import CRF
@@ -14,6 +17,8 @@ from rlner.crf import CRF
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
 EMBEDDING_DIR = DATA_DIR / "embeddings"
+PREPARED_DIR = DATA_DIR / "prepared"
+NOISE_DIR = PREPARED_DIR / "noise"
 
 
 def create_model(
@@ -111,3 +116,42 @@ class SentenceGetter:
             return s
         except KeyError:
             return None
+
+
+def _get_data(target: str):
+    if target in ["validation", "test"]:
+        with open(PREPARED_DIR / f"{target}.joblib", "rb") as fp:
+            sentences = joblib.load(fp)
+        return sentences
+
+    with open(NOISE_DIR / f"noise_{target}.joblib", "rb") as fp:
+        sentences = joblib.load(fp)
+    return sentences
+
+
+def _get_words(sentences):
+    words = set([item[0] for sublist in sentences for item in sublist])
+    words.add("PADword")
+    return words
+
+
+def _get_tags(sentences):
+    tags = set([item[-1] for sublist in sentences for item in sublist])
+    return tags
+
+
+def _to_idx(vals):
+    return {val: idx for idx, val in enumerate(vals)}
+
+
+def _make_dataset(sentences, max_len, words2index, tags2index):
+    y = [[tags2index.get(w[-1], tags2index.get("O")) for w in s] for s in sentences]
+    y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=tags2index["O"])
+    X = [[words2index.get(w[0], words2index.get("PADword")) for w in s] for s in sentences]
+    X = pad_sequences(maxlen=max_len, sequences=X, padding="post", value=words2index["PADword"])
+
+    x_tensor = tf.convert_to_tensor(X)
+    y_tensor = tf.convert_to_tensor(y)
+
+    ds = tf.data.Dataset.from_tensor_slices((x_tensor, y_tensor))
+    return ds.batch(32)
