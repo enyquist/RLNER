@@ -81,7 +81,7 @@ def main(split: str) -> None:
     test_data_pool = Re3dTaggingPool.prepare(split="test")
 
     # reward function
-    reward_fn = EntityF1Score(dense=False, average="micro")
+    reward_fn = EntityF1Score(dense=False, average="macro")
 
     # featurizer
     observation_featurizer = BiLSTMFeaturizerForSeqTagging(
