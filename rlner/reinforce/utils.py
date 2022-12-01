@@ -45,9 +45,9 @@ def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
                     agent.learn(states, rewards, actions)
                     average_rewards.append(total_reward)
 
-        if total_reward > max_reward:
+        if np.mean(average_rewards) > max_reward:
             patience = MAX_PATIENCE
-            max_reward = total_reward
+            max_reward = np.mean(average_rewards)
         elif episode >= MIN_EPISODES:
             patience -= 1
         else:
@@ -56,10 +56,12 @@ def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
         mean_rewards = np.mean(average_rewards)
         std_rewards = np.std(average_rewards)
 
-        print(
-            f"Episode #: {episode + 1}\tavg_reward: {mean_rewards:0.6f} +/- {std_rewards:0.6f}\tpatience: {patience}",
-            end="\r",
-        )
+        message = f"""
+        Episode #: {episode + 1}\tavg_reward: {mean_rewards:0.6f} +/- {std_rewards:0.6f}
+        patience: {patience}\ttop_reward: {max_reward}
+        """
+
+        print(message)
 
 
 def predict(agent: Agent, env: SeqTagEnv, render: bool = True):
