@@ -6,12 +6,14 @@ from tqdm import tqdm
 from rlner.nlp_gym.envs.seq_tagging.env import SeqTagEnv
 from rlner.reinforce.agent import Agent
 
+MAX_PATIENCE = 50
+MIN_EPISODES = 100
+
 
 def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
     """Train an agent"""
-    patience = 15
+    patience = MAX_PATIENCE
     max_reward = -999
-    MIN_EPISODES = 100
 
     # Train to convergence or max episodes
     for idx, episode in enumerate(tqdm(range(episodes), desc="Episode")):
@@ -44,10 +46,9 @@ def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
                     average_rewards.append(total_reward)
 
         if total_reward > max_reward:
-            patience = 15
+            patience = MAX_PATIENCE
             max_reward = total_reward
         elif idx >= MIN_EPISODES:
-            print("Patience Decreasing!")
             patience -= 1
         else:
             pass
@@ -56,7 +57,7 @@ def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
         std_rewards = np.std(average_rewards)
 
         print(
-            f"Episode #: {episode}\taverage_reward: {mean_rewards:0.6f} +/- {std_rewards:0.6f}\tpatience: {patience}",
+            f"Episode #: {idx + 1}\taverage_reward: {mean_rewards:0.6f} +/- {std_rewards:0.6f}\tpatience: {patience}",
             end="\r",
         )
 
