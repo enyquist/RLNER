@@ -16,7 +16,7 @@ def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
     max_reward = -999
 
     # Train to convergence or max episodes
-    for idx, episode in enumerate(tqdm(range(episodes), desc="Episode")):
+    for episode in tqdm(range(episodes), desc="Episode"):
         # Check Convergence
         if patience <= 0:
             break
@@ -48,7 +48,7 @@ def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
         if total_reward > max_reward:
             patience = MAX_PATIENCE
             max_reward = total_reward
-        elif idx >= MIN_EPISODES:
+        elif episode >= MIN_EPISODES:
             patience -= 1
         else:
             pass
@@ -57,7 +57,7 @@ def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
         std_rewards = np.std(average_rewards)
 
         print(
-            f"Episode #: {idx + 1}\taverage_reward: {mean_rewards:0.6f} +/- {std_rewards:0.6f}\tpatience: {patience}",
+            f"Episode #: {episode + 1}\tavg_reward: {mean_rewards:0.6f} +/- {std_rewards:0.6f}\tpatience: {patience}",
             end="\r",
         )
 
