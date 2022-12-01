@@ -9,13 +9,14 @@ from rlner.reinforce.agent import Agent
 
 def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
     """Train an agent"""
-    delta = 999
-    epsilon = 1e-5
+    patience = 15
+    max_reward = -999
+    MIN_EPISODES = 100
 
     # Train to convergence or max episodes
-    for episode in tqdm(range(episodes), desc="Episode"):
+    for idx, episode in enumerate(tqdm(range(episodes), desc="Episode")):
         # Check Convergence
-        if delta <= epsilon:
+        if patience <= 0:
             break
 
         samples = env.get_samples()
@@ -42,13 +43,20 @@ def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
                     agent.learn(states, rewards, actions)
                     average_rewards.append(total_reward)
 
-        if episode == 0:
-            delta = np.mean(average_rewards)
+        if total_reward > max_reward:
+            patience = 15
+            max_reward = total_reward
+        elif idx >= MIN_EPISODES:
+            print("Patience Decreasing!")
+            patience -= 1
         else:
-            delta = np.abs(delta - np.mean(average_rewards))
+            pass
+
+        mean_rewards = np.mean(average_rewards)
+        std_rewards = np.std(average_rewards)
 
         print(
-            f"Episode #: {episode}\taverage_reward: {np.mean(average_rewards):0.3f} +/- {np.std(average_rewards):0.3f}",
+            f"Episode #: {episode}\taverage_reward: {mean_rewards:0.6f} +/- {std_rewards:0.6f}\tpatience: {patience}",
             end="\r",
         )
 
