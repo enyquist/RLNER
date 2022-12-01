@@ -7,7 +7,7 @@ from rlner.nlp_gym.envs.seq_tagging.env import SeqTagEnv
 from rlner.reinforce.agent import Agent
 
 MAX_PATIENCE = 50
-MIN_EPISODES = 100
+MIN_EPISODES = 200
 
 
 def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
