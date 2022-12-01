@@ -15,13 +15,15 @@ class EntityScores:
     def __call__(self, true_labels: List[str], predicted_labels: List[str]):
         """Call"""
         metrics_dict = {
-            "precision": precision_score(true_labels, predicted_labels, average=self.average)
+            "precision": precision_score(true_labels, predicted_labels, average=self.average, zero_division=0)
             if len(true_labels) > 0
             else 0.0,
-            "recall": recall_score(true_labels, predicted_labels, average=self.average)
+            "recall": recall_score(true_labels, predicted_labels, average=self.average, zero_division=0)
             if len(true_labels) > 0
             else 0.0,
-            "f1": f1_score(true_labels, predicted_labels, average=self.average) if len(true_labels) > 0 else 0.0,
+            "f1": f1_score(true_labels, predicted_labels, average=self.average, zero_division=0)
+            if len(true_labels) > 0
+            else 0.0,
         }
         return metrics_dict
 
