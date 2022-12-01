@@ -56,12 +56,14 @@ def train(agent: Agent, env: SeqTagEnv, episodes: int, render=True) -> None:
         mean_rewards = np.mean(average_rewards)
         std_rewards = np.std(average_rewards)
 
-        message = f"""
-        Episode #: {episode + 1}\tavg_reward: {mean_rewards:0.6f} +/- {std_rewards:0.6f}
-        patience: {patience}\ttop_reward: {max_reward}
-        """
+        message = [
+            f"Episode #: {episode + 1}",
+            f"avg_reward: {mean_rewards:0.6f} +/- {std_rewards:0.6f}",
+            f"patience: {patience}",
+            f"top_reward: {max_reward:0.6f}",
+        ]
 
-        print(message)
+        print("\t".join(message), end="\r")
 
 
 def predict(agent: Agent, env: SeqTagEnv, render: bool = True):
