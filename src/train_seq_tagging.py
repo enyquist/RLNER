@@ -76,6 +76,9 @@ def main(split: str) -> None:
         callbacks=[callback, tensorboard_callback],
     )
 
+    # Save Bi-LSTM model predictions
+    utils._pred_lstm(split, model2, train_sentences, test_sentences)
+
     # data pool
     data_pool = Re3dTaggingPool.prepare(split=str(split))
     test_data_pool = Re3dTaggingPool.prepare(split="test")
