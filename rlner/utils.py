@@ -15,6 +15,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from rlner.crf import CRF
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
+MODEL_DIR = ROOT_DIR / "models"
 DATA_DIR = ROOT_DIR / "data"
 EMBEDDING_DIR = DATA_DIR / "embeddings"
 PREPARED_DIR = DATA_DIR / "prepared"
@@ -155,3 +156,46 @@ def _make_dataset(sentences, max_len, words2index, tags2index):
 
     ds = tf.data.Dataset.from_tensor_slices((x_tensor, y_tensor))
     return ds.batch(32)
+
+
+def _output_to_tag_sequence(pred):
+    return np.argmax(pred, axis=1)
+
+
+def _encode(test_sentence, words2index):
+    return np.array([words2index.get(word[0], words2index.get("PADword")) for word in test_sentence])
+
+
+def _decode_output(sequence, index2tags):
+    return [index2tags[idx] for idx in sequence]
+
+
+def _make_preds(test_sentences, max_len, words2index, index2tags, model):
+    sequences = [_encode(sent, words2index) for sent in test_sentences]
+    sequences = pad_sequences(maxlen=max_len, sequences=sequences, padding="post", value=words2index["PADword"])
+    preds, *rest = model.predict(sequences)
+    preds = [_output_to_tag_sequence(pred) for pred in preds]
+    decoded_preds = [_decode_output(sequence, index2tags) for sequence in preds]
+    for sent, decoded_pred in zip(test_sentences, decoded_preds):
+        for idx, (token, pred) in enumerate(zip(sent, decoded_pred)):
+            sent[idx] = token + (pred,)
+
+    return test_sentences
+
+
+def _pred_lstm(split: float, model: tf.keras.models.Model, train_sentences, test_sentences):
+    max_len = 100
+
+    words = _get_words(train_sentences)
+    tags = _get_tags(train_sentences)
+    words2index = _to_idx(words)
+    tags2index = _to_idx(tags)
+    index2tags = {idx: tag for tag, idx in tags2index.items()}
+
+    test_sentences = _make_preds(test_sentences, max_len, words2index, index2tags, model)
+
+    with open(MODEL_DIR / f"agents/agent_{split}/model_preds.txt", "w") as fp:
+        for sentence in test_sentences:
+            for token, pos, truth, pred in sentence:
+                fp.write(f"{token} {pos} {truth} {pred}\n")
+            fp.write("\n")
