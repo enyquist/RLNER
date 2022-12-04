@@ -30,7 +30,7 @@ sphinx==2.4.4
 sphinx-rtd-theme==0.4.3
 sphinx-autodoc-typehints==1.10.3
 nbconvert==5.6.1
-jinja2==3.1.2
+jinja2<3.1
 docutils==0.17.1
 
 # dvc
